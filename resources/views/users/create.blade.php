@@ -162,34 +162,66 @@
         });
     }
 
-    $('#country').change(function() {
+
+    $('#country_id').change(function() {
         var countryId = $(this).val();
-        $.ajax({
-            url: '/states/' + countryId,
-            type: 'GET',
-            success: function(data) {
-                $('#state').empty();
-                $('#state_id').append('<option value="">Select State</option>');
-                $.each(data.states, function(index, state) {
-                    $('#state').append('<option value="'+state.id+'">'+state.state+'</option>');
-                });
+      //  console.log(countryId);
+        
+        // Ensure the countryId is valid
+        if(countryId) 
+        {
+            $.ajax({
+                url: '/states/' + countryId,
+                type: 'GET',
+                success: function(data) 
+                {
+                  // console.log(data);
+                    $('#state_id').empty();
+                    $('#state_id').append('<option value="">Select State</option>');
+
+                    if (data.states.length > 0) 
+                    {
+                    $.each(data.states, function(index, state) 
+                    {
+                        $('#state_id').append('<option value="'+state.id+'">'+state.name+'</option>');
+                    });
+                } else {
+                    $('#state_id').append('<option value="">No states available</option>');
+                }
             }
         });
+    }
     });
 
-    $('#state').change(function() {
+    $('#state_id').change(function()
+     {
         var stateId = $(this).val();
-        $.ajax({
-            url: '/cities/' + stateId,
-            type: 'GET',
-            success: function(data) {
-                $('select[name="city_id"]').empty();
-                $('#city_id').append('<option value="">Select City</option>');
-                $.each(data.cities, function(index, city) {
-                    $('select[name="city_id"]').append('<option value="'+city.id+'">'+city.city+'</option>');
-                });
+
+        if(stateId) 
+        {
+            $.ajax({
+                url: '/cities/' + stateId,
+                type: 'GET',
+                success: function(data)
+                 {
+                    $('#city_id').empty();
+                    $('#city_id').append('<option value="">Select City</option>');
+
+                    if (data.cities.length > 0) 
+                    {
+                    // If cities exist, populate the city dropdown
+                    $.each(data.cities, function(index, city) 
+                    {
+                        $('#city_id').append('<option value="'+city.id+'">'+city.name+'</option>');
+                    });
+                } else 
+                {
+                    // If no cities, show a message in the dropdown
+                    $('#city_id').append('<option value="">No cities available</option>');
+                }
             }
         });
+    }
     });
 </script> 
 

@@ -12,6 +12,7 @@ class City extends Model
 
     protected $fillable = ['name', 'state_id'];
 
+    protected $table = 'cities';
     
      // Relationship with State model
      
@@ -30,6 +31,6 @@ class City extends Model
 
     public function getCitiesByState($stateId)
     {
-        return $this->where('state_id', $stateId)->get();
+        return City::where('state_id', $stateId)->get();
     }
 }

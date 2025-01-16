@@ -21,6 +21,6 @@ class Country extends Model
 
     public function getCountry()
     {
-       return Country::all();
+       return Country::all(['id','name']);
     }
 }
