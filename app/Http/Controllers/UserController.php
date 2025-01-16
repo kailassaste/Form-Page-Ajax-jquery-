@@ -66,10 +66,9 @@ class UserController extends Controller
 
         $users= $userModel->getAllUsers();
 
-        return view('user.index', compact('users'));
+        return view('users.create', compact('users'));
     }
 
-    
     public function getStates($countryId)
     {
         $stateModel = new State();
@@ -79,7 +78,6 @@ class UserController extends Controller
         return response()->json(['states' => $states]);
     }
 
-    
     public function getCities($stateId)
     {
         $cityModel = new City();
@@ -89,7 +87,8 @@ class UserController extends Controller
         return response()->json(['cities' => $cities]);
     }
 
-    public function getCountryData(){
+    public function getCountryData()
+    {
         $countries = new Country();
         $getCountry = $countries->getCountry();
 
