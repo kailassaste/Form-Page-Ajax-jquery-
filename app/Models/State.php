@@ -29,6 +29,6 @@ class State extends Model
 
     public function getStatesByCountry($countryId)
     {
-        return State::where('country_id', $countryId)->get();
+        return State::where('country_id', $countryId)->get(['id','name','country_id']);
     }
 }

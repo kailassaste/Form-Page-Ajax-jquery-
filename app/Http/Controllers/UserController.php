@@ -1,13 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Users;
 use App\Models\Gender;
 use App\Models\State;
 use App\Models\City;
 use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Validator;
 
 class UserController extends Controller
 {
@@ -20,53 +21,135 @@ class UserController extends Controller
         return view('users.create', compact('genders', 'countries'));
     }
 
-    
+    public function edit($id)
+    {
+        $user = Users::findOrFail($id);
+
+        return view('users.edit', compact('user'));
+    }
+
     public function store(Request $request)
     {
         // Validation
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'mobile_no' => 'required|string|max:15',
-            'gender_id' => 'required|exists:genders,id',
-            'city_id' => 'required|exists:cities,id',
-            'password' => 'required|string|min:8|confirmed',
-            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'mobile_no' => 'required|string|max:15',
+                'gender_id' => 'required|exists:genders,id',
+                'country_id' => 'required|exists:countries,id',
+                'state_id' => 'required|exists:states,id',
+                'city_id' => 'required|exists:cities,id',
+                'password' => 'required|string|min:8|confirmed',
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ],
+            [
+                'gender_id.required' => 'Gender field is required',
+                'country_id.required' => 'Country field is required',
+                'state_id.required' => 'State field is required',
+                'city_id.required' => 'City field is required',
+
+            ]
+    );
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                             ->withErrors($validator)
+                             ->withInput();
+        }
+
+        $data = $request->only([
+            'name', 'email', 'mobile_no', 'gender_id', 'city_id', 'password', 'profile_photo',
         ]);
+       
+        $data['password'] = Hash::make($request->password);
 
-        // Hash pass
-        $hashedPassword = Hash::make($request->password);
+        if ($request->hasFile('profile_photo'))
+        {
+            $filename = time() . '.' . $request->file('profile_photo')->extension();
 
-        //  for profile photo
+            $filePath = public_path('profilePhotos/' . $filename);
+
+            $request->file('profile_photo')->move($filePath, $filename);
+
+            $data['profile_photo'] = 'profilePhotos/' . $filename;
+          
+        }
+
+        $data['created_at'] = auth()->id();
+
+        $user = (new Users)->createdBy($data);
+
+        return response()->json([
+            'message' => 'User created successfully!',
+            'user' => $user
+    ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validation for updating an existing user
+        $user = Users::findOrFail($id);
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'mobile_no' => 'required|string|max:15',
+                'gender_id' => 'required|exists:genders,id',
+                'country_id' => 'required|exists:countries,id',
+                'state_id' => 'required|exists:states,id',
+                'city_id' => 'required|exists:cities,id',
+                'password' => 'nullable|string|min:8|confirmed',
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ],
+            [
+                'gender_id.required' => 'Gender field is required',
+                'country_id.required' => 'Country field is required',
+                'state_id.required' => 'State field is required',
+                'city_id.required' => 'City field is required',
+
+            ]
+        );
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                             ->withErrors($validator)
+                             ->withInput();
+        }
+
+        $data = $request->only(['name', 'email', 'mobile_no', 'gender_id', 'city_id', 'password', 'profile_photo']);
+
+        if ($request->password) 
+        {
+            $data['password'] = Hash::make($request->password);
+        }
+
         if ($request->hasFile('profile_photo')) {
             $filename = time() . '.' . $request->file('profile_photo')->extension();
             $filePath = public_path('profilePhotos/' . $filename);
             $request->file('profile_photo')->move($filePath, $filename);
+            $data['profile_photo'] = 'profilePhotos/' . $filename;
         }
 
-        // Create the user record
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'mobile_no' => $request->mobile_no,
-            'gender_id' => $request->gender_id,
-            'city_id' => $request->city_id,
-            'password' => $hashedPassword,
-            'profile_photo' => isset($filename) ? 'profilePhotos/' . $filename : null,
-            'created_by' => auth()->id(),
-        ]);
+        $user->update($data); 
 
-        return redirect()->route('users.index')->with('success', 'User created successfully!');
+        return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
+
 
     //List all users
     public function index()
     {
-        $userModel = new User();
+        $userModel = new Users();
 
         $users= $userModel->getAllUsers();
 
-        return view('users.create', compact('users'));
+        $users = Users::with(['gender', 'city', 'city.state.country'])->get();
+
+        return view('users.index', compact('users'));
     }
 
     public function getStates($countryId)
@@ -94,6 +177,40 @@ class UserController extends Controller
 
         return $getCountry;
     }
+
+    public function getGender()
+    {
+        $genders = Gender::all();
+
+        return response()->json(['genders' => $genders]);
+
+    }
+
+    public function updatedBy()
+    {
+        $users = Users::updatedBy();
+
+        return view('users.updated', compact('users'));
+    }
+
+    public function deletedBy()
+    {
+        $users = Users::deletedBy();
+
+        return view('users.deleted', compact('users'));
+    }
+
+    public function destroy($id)
+{
+    // Find the user by ID
+    $user = Users::findOrFail($id);
+    
+    // Delete the user
+    $user->delete();
+
+    // Redirect back with a success message
+    return redirect()->route('users.index')->with('success', 'User deleted successfully!');
+}
 
 }
 
