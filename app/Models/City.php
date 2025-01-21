@@ -31,6 +31,6 @@ class City extends Model
 
     public function getCitiesByState($stateId)
     {
-        return City::where('state_id', $stateId)->get();
+        return City::where('state_id', $stateId)->get(['id','name','state_id']);
     }
 }
