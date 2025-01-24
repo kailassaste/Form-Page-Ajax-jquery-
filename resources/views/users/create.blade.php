@@ -7,7 +7,6 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJX3Z0X3jxs+1dXbt8kF7x3sfHwPoqFISkIowYwMDt/edYkJd1EO4dT0yDXJ" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
-
     <style>
         body {
             background-color: #f8f9fa;
@@ -200,9 +199,9 @@
 
         $('#gender_id').select2();
         
-        getCountryData();
+        getCountryData(); 
     });
-
+    
     function getCountryData()
     {
         $.ajax({
@@ -222,11 +221,10 @@
         });
     }
 
-
-    $('#country_id').change(function() {
+    $('#country_id').change(function() 
+    {
         var countryId = $(this).val();
-      
-        // Ensure the countryId is valid
+
         if(countryId) 
         {
             $.ajax({
@@ -267,14 +265,12 @@
 
                     if (data.cities.length > 0) 
                     {
-                    // If cities exist, populate the city dropdown
                     $.each(data.cities, function(index, city) 
                     {
                         $('#city_id').append('<option value="'+city.id+'">'+city.name+'</option>');
                     });
                 } else 
                 {
-                    // If no cities, show a message in the dropdown
                     $('#city_id').append('<option value="">No cities available</option>');
                 }
             }

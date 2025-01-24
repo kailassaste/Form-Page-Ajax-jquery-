@@ -29,10 +29,8 @@ class Users extends Model
         return $this->belongsTo(City::class,'city_ID');
     }
 
-    public function createdBy( $data)
-    {
-        $data['password'] = Hash::make($data['password']);
-        
+    public function createdBy($data)
+    { 
         $user = Users::create([
             'name' => $data['name'],
             'email' => $data['email'],
