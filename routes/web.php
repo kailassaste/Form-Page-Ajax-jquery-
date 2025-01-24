@@ -28,8 +28,6 @@ Route::get('/cities/{stateId}', [UserController::class, 'getCities']);
 
 Route::get('/users', [UserController::class, 'index']);
 
-//Route::post('/users', 'App\Http\Controllers\UserController@index');
-
 
 // Route::post('country/create', [UserController::class, 'createCountry'])->name('countries.create');
 // Route::get('countries', [UserController::class, 'indexCountries'])->name('countries.index');

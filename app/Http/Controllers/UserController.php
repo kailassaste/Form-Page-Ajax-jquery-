@@ -30,6 +30,8 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        //
+        //dd($request->all());
         // Validation
         $validator = Validator::make(
             $request->all(),
@@ -41,7 +43,6 @@ class UserController extends Controller
                 'country_id' => 'required|exists:countries,id',
                 'state_id' => 'required|exists:states,id',
                 'city_id' => 'required|exists:cities,id',
-                'password' => 'required|string|min:8|confirmed',
                 'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ],
             [
@@ -51,40 +52,43 @@ class UserController extends Controller
                 'city_id.required' => 'City field is required',
 
             ]
-    );
+        );
 
         if ($validator->fails()) {
             return redirect()->back()
                              ->withErrors($validator)
                              ->withInput();
         }
-
+        
         $data = $request->only([
-            'name', 'email', 'mobile_no', 'gender_id', 'city_id', 'password', 'profile_photo',
+            'name', 'email', 'mobile_no', 'gender_id', 'city_id', 'profile_photo',
         ]);
-       
+    
         $data['password'] = Hash::make($request->password);
 
-        if ($request->hasFile('profile_photo'))
-        {
-            $filename = time() . '.' . $request->file('profile_photo')->extension();
+        // if ($request->hasFile('profile_photo'))
+        // {
+        //     $filename = time() . '.' . $request->file('profile_photo')->extension();
+    
+        //     $filePath = public_path('profilePhotos');
+    
+        //     $request->file('profile_photo')->move($filePath, $filename);
+    
+        //     $data['profile_photo'] = 'profilePhotos/' . $filename;
+              
+        // }
 
-            $filePath = public_path('profilePhotos/' . $filename);
+        $data['created_at'] = now();
 
-            $request->file('profile_photo')->move($filePath, $filename);
+        // dd($data);
+        $user = new Users();
 
-            $data['profile_photo'] = 'profilePhotos/' . $filename;
-          
-        }
-
-        $data['created_at'] = auth()->id();
-
-        $user = (new Users)->createdBy($data);
+        $user->createdBy($data);
 
         return response()->json([
             'message' => 'User created successfully!',
             'user' => $user
-    ]);
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -133,7 +137,6 @@ class UserController extends Controller
             $request->file('profile_photo')->move($filePath, $filename);
             $data['profile_photo'] = 'profilePhotos/' . $filename;
         }
-
         $user->update($data); 
 
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
@@ -202,14 +205,13 @@ class UserController extends Controller
 
     public function destroy($id)
 {
-    // Find the user by ID
     $user = Users::findOrFail($id);
-    
-    // Delete the user
+
+    $deletedUserInfo = $user->only(['id', 'name', 'email', 'mobile_no', 'gender_ID', 'city_ID']);
+  
     $user->delete();
 
-    // Redirect back with a success message
-    return redirect()->route('users.index')->with('success', 'User deleted successfully!');
+    return response()->json(['message' => 'User deleted successfully!','user' => $deletedUserInfo]);
 }
 
 }
@@ -244,3 +246,4 @@ class UserController extends Controller
     //     return view('countries.index', compact('countries'));  // Pass countries to the view
  
     // }
+    // return redirect()->route('users.index')->with('success', 'User deleted successfully!');

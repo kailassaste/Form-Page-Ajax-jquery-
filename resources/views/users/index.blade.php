@@ -34,7 +34,7 @@
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            <button type="submit" class="btn btn-danger btn-sm delete-btn" data-id= "{{ $user->id }}">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -43,3 +43,27 @@
     </table>
 </div>
 @endsection
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).on('click', '.delete-btn', function () 
+    {
+        var userId = $(this).data('id');
+
+        if (confirm('Are you sure you want to delete this user?')) 
+        {
+            $.ajax({
+                url: '/users/' + userId,
+                type: 'DELETE',
+                success: function (response) 
+                {
+                    alert(response.message);
+                    $('tr[data-id="' + userId + '"]').remove();
+                },
+                error: function () {
+                    alert('Error deleting user.');
+                }
+            });
+        }
+    });
+</script>

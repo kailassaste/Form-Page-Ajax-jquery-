@@ -1,7 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="container">
+<div>
     <h1>Edit User</h1>
 
     <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
@@ -95,12 +92,12 @@
         <button type="submit" class="btn btn-primary">Update User</button>
     </form>
 </div>
-@endsection
 
-<script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type = 'text/javascript'>
     $(document).ready(function() 
     {
-        console.log('hii');
+       // console.log('heyy');
         $.ajax({
             url: '/genders',
             type: 'GET',
@@ -124,7 +121,7 @@
             {
                 $('#country_id').empty().append('<option value="">Select Country</option>');
 
-                $.each(data.countries, function(index, country) 
+                $.each(data, function(index, country) 
                 {
                     $('#country_id').append('<option value="'+country.id+'">'+country.name+'</option>');
                 });
