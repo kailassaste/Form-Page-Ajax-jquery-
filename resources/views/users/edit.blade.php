@@ -1,80 +1,103 @@
-<div>
-    <h1>Edit User</h1>
+@extends('layouts.app')
+
+@section('content')
+<div class="container mt-5 border rounded p-4 shadow-lg" style="max-width: 800px; background-color: #f8f9fa;">
+    <h1 class="mb-4 text-center text-primary" style="font-family: 'Arial', sans-serif;">Edit User</h1>
 
     <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
-        <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $user->name) }}">
-            @error('name')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="name" class="font-weight-bold">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $user->name) }}">
+                    @error('name')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="email" class="font-weight-bold">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $user->email) }}">
+                    @error('email')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="mobile_no" class="font-weight-bold">Mobile No</label>
+                    <input type="text" id="mobile_no" name="mobile_no" class="form-control" value="{{ old('mobile_no', $user->mobile_no) }}">
+                    @error('mobile_no')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="gender_id" class="font-weight-bold">Gender</label>
+                    <select name="gender_id" id="gender_id" class="form-control">
+                        <option value="">Select Gender</option>
+                    </select>
+                    <input type="hidden" name="selected_gender_id" id="selected_gender_id" value="{{ old('gender_id', $user->gender_id) }}">
+                    @error('gender_id')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="country_id" class="font-weight-bold">Country</label>
+                    <select name="country_id" id="country_id" class="form-control">
+                        <option value="">Select Country</option>
+                    </select>
+                    <input type="hidden" name="selected_country_id" id="selected_country_id" value="{{ old('country_id', $user->country_id) }}">
+                    @error('country_id')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="state_id" class="font-weight-bold">State</label>
+                    <select name="state_id" id="state_id" class="form-control">
+                        <option value="">Select State</option>
+                    </select>
+                    <input type="hidden" name="selected_state_id" id="selected_state_id" value="{{ old('state_id', $user->state_id) }}">
+                    @error('state_id')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="city_id" class="font-weight-bold">City</label>
+                    <select name="city_id" id="city_id" class="form-control">
+                        <option value="">Select City</option>
+                    </select>
+                    <input type="hidden" name="selected_city_id" id="selected_city_id" value="{{ old('city_id', $user->city_id) }}">
+                    @error('city_id')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $user->email) }}">
-            @error('email')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="mobile_no">Mobile No</label>
-            <input type="text" id="mobile_no" name="mobile_no" class="form-control" value="{{ old('mobile_no', $user->mobile_no) }}">
-            @error('mobile_no')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="gender_id">Gender</label>
-            <select name="gender_id" id="gender_id" class="form-control">
-                <option value="">Select Gender</option>
-            </select>
-            <input type="hidden" name="selected_gender_id" id="selected_gender_id" value="{{ old('gender_id', $user->gender_id) }}">
-            @error('gender_id')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="country_id">Country</label>
-            <select name="country_id" id="country_id" class="form-control">
-                <option value="">Select Country</option>
-            </select>
-            <input type="hidden" name="selected_country_id" id="selected_country_id" value="{{ old('country_id', $user->country_id) }}">
-            @error('country_id')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="state_id">State</label>
-            <select name="state_id" id="state_id" class="form-control">
-                <option value="">Select State</option>
-            </select>
-            <input type="hidden" name="selected_state_id" id="selected_state_id" value="{{ old('state_id', $user->state_id) }}">
-            @error('state_id')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="city_id">City</label>
-            <select name="city_id" id="city_id" class="form-control">
-                <option value="">Select City</option>
-           </select>
-           <input type="hidden" name="selected_city_id" id="selected_city_id" value="{{ old('city_id', $user->city_id) }}">
-           @error('city_id')
-            <div class="text-danger">{{ $message }}</div>
-           @enderror
-       </div>
-
-        <div class="form-group">
-            <label for="password">Password (Leave blank to keep current password)</label>
+            <label for="password" class="font-weight-bold">Password (Leave blank to keep current password)</label>
             <input type="password" id="password" name="password" class="form-control">
             @error('password')
                 <div class="text-danger">{{ $message }}</div>
@@ -82,22 +105,21 @@
         </div>
 
         <div class="form-group">
-            <label for="profile_photo">Profile Photo (Optional)</label>
+            <label for="profile_photo" class="font-weight-bold">Profile Photo (Optional)</label>
             <input type="file" name="profile_photo" class="form-control" accept=".jpg,.png">
             @error('profile_photo')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
 
-        <button type="submit" class="btn btn-primary">Update User</button>
+        <button type="submit" class="btn btn-primary mt-3 w-100" style="background-color: #007bff; border-color: #007bff; font-weight: bold; padding: 10px;">Update User</button>
     </form>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script type = 'text/javascript'>
+<script type = "text/javascript">
     $(document).ready(function() 
     {
-       // console.log('heyy');
         $.ajax({
             url: '/genders',
             type: 'GET',
@@ -194,3 +216,4 @@
     });
 </script>
 
+@endsection
