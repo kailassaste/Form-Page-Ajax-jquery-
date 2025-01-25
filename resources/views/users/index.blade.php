@@ -1,12 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
 <div class="container">
-    <h1>Users</h1>
+    <h1 class="fw-bold mb-4">Users</h1>
+
+    <div class="mb-3">
+        <label for="search" class="form-label">Search Users</label>
+        <input type="text" class="form-control" id="search" placeholder="Search here...">
+    </div>
 
     <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">Create New User</a>
-    <table class="table">
-        <thead>
+    <table class="table table-bordered table-striped" id="userTable">
+        <thead class="table-dark">
             <tr>
                 <th>Name</th>
                 <th>Email</th>
@@ -29,12 +39,12 @@
                     <td>{{ $user->isActive ? 'Active' : 'Inactive' }}</td>
                     <td>
 
-                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm mx-1">Edit</a>
 
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm delete-btn" data-id= "{{ $user->id }}">Delete</button>
+                            <button type="submit" class="btn btn-danger btn-sm mx-1 delete-btn" data-id= "{{ $user->id }}">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -42,10 +52,27 @@
         </tbody>
     </table>
 </div>
-@endsection
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    $(document).ready(function() {
+        $('#search').on('keyup', function() {
+            var query = $(this).val();
+            fetchData(query);
+        });
+
+        function fetchData(query = '') {
+            $.ajax({
+                url: "{{ route('users.index') }}", 
+                type: 'GET',
+                data: { search: query },
+                success: function(data) {
+                    $('#userTable tbody').html(data);
+                }
+            });
+        }
+        fetchData();
+
     $(document).on('click', '.delete-btn', function () 
     {
         var userId = $(this).data('id');
@@ -66,4 +93,6 @@
             });
         }
     });
+});
 </script>
+@endsection

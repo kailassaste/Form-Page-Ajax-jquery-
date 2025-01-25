@@ -30,8 +30,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        //
-        //dd($request->all());
         // Validation
         $validator = Validator::make(
             $request->all(),
@@ -66,18 +64,17 @@ class UserController extends Controller
     
         $data['password'] = Hash::make($request->password);
 
-        // if ($request->hasFile('profile_photo'))
-        // {
-        //     $filename = time() . '.' . $request->file('profile_photo')->extension();
+        if ($request->hasFile('profile_photo'))
+        {
+            $filename = time() . '.' . $request->file('profile_photo')->extension();
     
-        //     $filePath = public_path('profilePhotos');
+            $filePath = public_path('profilePhotos');
     
-        //     $request->file('profile_photo')->move($filePath, $filename);
+            $request->file('profile_photo')->move($filePath, $filename);
     
-        //     $data['profile_photo'] = 'profilePhotos/' . $filename;
+            $data['profile_photo'] = 'profilePhotos/' . $filename;
               
-        // }
-
+        }
         $data['created_at'] = now();
 
         // dd($data);
@@ -85,10 +82,14 @@ class UserController extends Controller
 
         $user->createdBy($data);
 
-        return response()->json([
-            'message' => 'User created successfully!',
-            'user' => $user
-        ]);
+        session()->flash('success', 'User created successfully!');
+
+        return redirect()->route('users.create'); 
+
+        // return response()->json([
+        //     'message' => 'User created successfully!',
+        //     'user' => $user
+        // ]);
     }
 
     public function update(Request $request, $id)
@@ -142,16 +143,39 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
 
-
     //List all users
-    public function index()
+    public function index(Request $request)
     {
         $userModel = new Users();
 
-        $users= $userModel->getAllUsers();
+        //$users= $userModel->getAllUsers();
 
-        $users = Users::with(['gender', 'city', 'city.state.country'])->get();
+        $usersQuery = Users::with(['gender', 'city', 'city.state.country']);
+        if ($request->has('search') && $request->search != '') 
+        {
+            $search = $request->search;
+    
+            $usersQuery = $usersQuery->where(function($query) use ($search) 
+            {
+                $query->where('name', 'like', "%$search%")
+                      ->orWhere('email', 'like', "%$search%")
+                      ->orWhere('mobile_no', 'like', "%$search%")
+                      ->orWhereHas('gender', function($query) use ($search) 
+                      {
+                          $query->where('name', 'like', "%$search%");
+                      })
+                      ->orWhereHas('city', function($query) use ($search) 
+                      {
+                          $query->where('name', 'like', "%$search%");
+                      });
+            });
+        }
+        $users = $usersQuery->get();
 
+        if ($request->ajax()) 
+        {
+            return response()->json(view('users.user_table', compact('users'))->render());
+        }    
         return view('users.index', compact('users'));
     }
 

@@ -26,7 +26,7 @@ Route::get('/states/{countryId}', [UserController::class, 'getStates']);
 
 Route::get('/cities/{stateId}', [UserController::class, 'getCities']);
 
-Route::get('/users', [UserController::class, 'index']);
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
 
 
 // Route::post('country/create', [UserController::class, 'createCountry'])->name('countries.create');
