@@ -1,25 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Registration Form</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+@extends('layouts.app')
 
-    <style>
-        .bold-label {
-            font-weight: bold;
-            font-size: 1.2rem;
+@section('content')
+<style>
+    .bold-label {
+        font-weight: bold;
+        font-size: 1.2rem;
         }
-    </style>
-</head>
-<body class="bg-light">
+    .back-button {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        z-index: 20px;
+        }
+    .form-container {
+        position: relative;
+        padding-top: 40px; 
+        }
+</style>
 
 <div class="container my-5">
     <div class="card p-4 shadow-lg" style="max-width: 800px; background-color: #f8f9fa;">
         <h2 class="text-center text-primary mb-4 fw-bold" style="font-family: 'Arial', sans-serif;">Create User Account</h2>
+        
+        <a href="{{ route('users.index') }}" class="btn btn-secondary back-button">
+            <i class="bi bi-arrow-left-circle"></i> Back
+        </a>
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -71,7 +76,7 @@
             <div class="mb-3">
                 <label for="country_id" class="form-label bold-label">Country</label>
                 <select class="form-select" id="country_id" name="country_id" >
-                    <option>Select Country</option>
+                    <option value="">Select Country</option>
                 </select>
                 @error('country_id')
                     <div class="text-danger">{{ $message }}</div>
@@ -81,7 +86,7 @@
             <div class="mb-3">
                 <label for="state_id" class="form-label bold-label">State</label>
                 <select class="form-select" name="state_id" id="state_id" >
-                    <option>Select State</option>
+                    <option value="">Select State</option>
                 </select>
                 @error('state_id')
                     <div class="text-danger">{{ $message }}</div>
@@ -91,7 +96,7 @@
             <div class="mb-3">
                 <label for="city_id" class="form-label bold-label">City</label>
                 <select class="form-select" name="city_id" id="city_id">
-                    <option>Select City</option>
+                    <option value="">Select City</option>
                 </select>
                 @error('city_id')
                     <div class="text-danger">{{ $message }}</div>
@@ -116,40 +121,23 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    $(document).ready(function(){
-
+    $(document).ready(function()
+    {
         $('#gender_id').select2();
+        $('#country_id').select2();
+        $('#state_id').select2();
+        $('#city_id').select2();
         
         getCountryData(); 
-    });
-    
-    function getCountryData()
-    {
-        $.ajax({
-            url: "{{ url('/countries')}}", 
-            type: 'GET',
-            success: function(data)
-            {
-                $('#country_id').empty(); 
 
-                $('#country_id').append('<option value="">Select Country</option>');
-
-                $.each(data, function(index, country) 
-                {
-                    $('#country_id').append('<option value="'+country.id+'">'+country.name+'</option>');
-                });
-            }
-        });
-    }
-
-    $('#country_id').change(function() 
-    {
+        $(document).on('change','#country_id',function() 
+        {
         var countryId = $(this).val();
 
         if(countryId) 
         {
             $.ajax({
-                url: '/states/' + countryId,
+                url: "{{ url('/states') }}/" + countryId,
                 type: 'GET',
                 success: function(data) 
                 {
@@ -177,7 +165,7 @@
         if(stateId) 
         {
             $.ajax({
-                url: '/cities/' + stateId,
+                url: "{{ url('/cities') }}/" + stateId,
                 type: 'GET',
                 success: function(data)
                  {
@@ -198,10 +186,29 @@
         });
     }
     });
-</script> 
+});
+    
+    function getCountryData()
+    {
+        $.ajax({
+            url: "{{ url('/countries')}}", 
+            type: 'GET',
+            success: function(data)
+            {
+                $('#country_id').empty(); 
 
-</body>
-</html>
+                $('#country_id').append('<option value="">Select Country</option>');
+
+                $.each(data, function(index, country) 
+                {
+                    $('#country_id').append('<option value="'+country.id+'">'+country.name+'</option>');
+                });
+            }
+        });
+    }
+
+</script> 
+@endsection
 
 
 
