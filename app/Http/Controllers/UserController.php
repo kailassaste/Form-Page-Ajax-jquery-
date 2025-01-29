@@ -30,7 +30,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        // Validation
         $validator = Validator::make(
             $request->all(),
             [
@@ -77,7 +76,6 @@ class UserController extends Controller
         }
         $data['created_at'] = now();
 
-        // dd($data);
         $user = new Users();
 
         $user->createdBy($data);
@@ -85,11 +83,6 @@ class UserController extends Controller
         session()->flash('success', 'User created successfully!');
 
         return redirect()->route('users.create'); 
-
-        // return response()->json([
-        //     'message' => 'User created successfully!',
-        //     'user' => $user
-        // ]);
     }
 
     public function update(Request $request, $id)
@@ -148,9 +141,8 @@ class UserController extends Controller
     {
         $userModel = new Users();
 
-        //$users= $userModel->getAllUsers();
-
         $usersQuery = Users::with(['gender', 'city', 'city.state.country']);
+
         if ($request->has('search') && $request->search != '') 
         {
             $search = $request->search;
@@ -167,15 +159,26 @@ class UserController extends Controller
                       ->orWhereHas('city', function($query) use ($search) 
                       {
                           $query->where('name', 'like', "%$search%");
-                      });
+                      })
+                      ->orWhereHas('city.state', function($query) use ($search) 
+                      { 
+                        $query->where('name', 'like', "%$search%");
+                    });
             });
         }
-        $users = $usersQuery->get();
+
+        $perPage = $request->input('length', 4);
+        $users = $usersQuery->paginate($perPage);
 
         if ($request->ajax()) 
         {
-            return response()->json(view('users.user_table', compact('users'))->render());
-        }    
+            return response()->json([
+                'draw' => $request->draw,
+                'recordsTotal' => $users->total(),
+                'recordsFiltered' => $users->total(),
+                'data' => $users->items(),
+            ]);
+        }
         return view('users.index', compact('users'));
     }
 
@@ -202,7 +205,7 @@ class UserController extends Controller
         $countries = new Country();
         $getCountry = $countries->getCountry();
 
-        return $getCountry;
+        return response()->json($getCountry);
     }
 
     public function getGender()
@@ -240,34 +243,3 @@ class UserController extends Controller
 
 }
 
-
-
-
-
-
- //for country
-    // public function showCreateCountryForm()
-    // {
-    //     return view('countries.create');
-    // }
-
-    // public function createCountry(Request $request)
-    // {
-        
-    //     $request->validate([
-    //         'name' => 'required|string|max:255|unique:countries,name', 
-    //     ]);
-
-    //     $country = new Country();
-    //     $country->createCountry($request->name);
-
-    //     return redirect()->route('countries.index')->with('success', 'Country created successfully!');
-    // }
-
-    // public function indexCountries()
-    // {
-    //     $countries = Country::all();  // Fetch all countries
-    //     return view('countries.index', compact('countries'));  // Pass countries to the view
- 
-    // }
-    // return redirect()->route('users.index')->with('success', 'User deleted successfully!');

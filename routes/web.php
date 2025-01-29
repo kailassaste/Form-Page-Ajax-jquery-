@@ -3,10 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
-Route::get('/', function () {
+Route::get('/welcome', function () {
     return view('welcome');
 
-});
+})->name('welcome');
 
 Route::get('users/create', [UserController::class, 'create'])->name('users.create');
 
@@ -28,6 +28,3 @@ Route::get('/cities/{stateId}', [UserController::class, 'getCities']);
 
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
 
-
-// Route::post('country/create', [UserController::class, 'createCountry'])->name('countries.create');
-// Route::get('countries', [UserController::class, 'indexCountries'])->name('countries.index');

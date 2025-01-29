@@ -1,8 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    .bold-label {
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    .back-button {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        z-index: 20px;
+    }
+    .form-container {
+        position: relative;
+        padding-top: 40px; 
+    }
+</style>
+
 <div class="container mt-5 border rounded p-4 shadow-lg" style="max-width: 800px; background-color: #f8f9fa;">
+
     <h1 class="mb-4 text-center text-primary" style="font-family: 'Arial', sans-serif;">Edit User</h1>
+
+    <a href="{{ route('users.index') }}" class="btn btn-secondary back-button">
+        <i class="bi bi-arrow-left-circle"></i> Back
+    </a>
 
     <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -117,9 +139,12 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script type = "text/javascript">
     $(document).ready(function() 
     {
+        $('#gender_id, #country_id, #state_id, #city_id').select2();
+
         $.ajax({
             url: '/genders',
             type: 'GET',

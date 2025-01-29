@@ -15,13 +15,11 @@ class State extends Model
 
     protected $table = 'states';
     
-    //Relationship with Country model
     public function country()
     {
         return $this->belongsTo(Country::class);
     }
 
-    //Relationship with City model
     public function cities()
     {
         return $this->hasMany(city::class);
