@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Validator;
 
 class UserController extends Controller
@@ -57,37 +58,52 @@ class UserController extends Controller
                              ->withInput();
         }
         
+        $existingUser = Users::where('email', $request->email)->first();
+        if ($existingUser) {
+            return redirect()->back()
+                             ->withErrors(['email' => 'The email address is already taken.'])
+                             ->withInput();
+        }
+
         $data = $request->only([
             'name', 'email', 'mobile_no', 'gender_id', 'city_id', 'profile_photo',
         ]);
     
         $data['password'] = Hash::make($request->password);
 
+        $data['created_at'] = now();
+        
+        $user = new Users();
+        //dd($data);
+
         if ($request->hasFile('profile_photo'))
         {
-            $filename = time() . '.' . $request->file('profile_photo')->extension();
-    
-            $filePath = public_path('profilePhotos');
-    
-            $request->file('profile_photo')->move($filePath, $filename);
-    
-            $data['profile_photo'] = 'profilePhotos/' . $filename;
-              
+            $file = $request->file('profile_photo');
+
+            $filePath = $file->storeAs('public/profilePhotos', 'user_' . time() . '.' . $file->getClientOriginalExtension());
+
+            $user->profile_photo = Storage::url($filePath);
+
+            $data['profile_photo'] = $user->profile_photo;
+
         }
-        $data['created_at'] = now();
+        else{
+            $data['profile_photo'] = null;
+        }
+   
+        $save = $user->createdBy($data);
 
-        $user = new Users();
-
-        $user->createdBy($data);
-
-        session()->flash('success', 'User created successfully!');
+        if(!empty($save)){
+            session()->flash('success', 'User created successfully!');
+        }else{
+            session()->flash('error', 'User not created!');
+        }
 
         return redirect()->route('users.create'); 
     }
 
     public function update(Request $request, $id)
     {
-        // Validation for updating an existing user
         $user = Users::findOrFail($id);
 
         $validator = Validator::make(
@@ -125,12 +141,21 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        if ($request->hasFile('profile_photo')) {
-            $filename = time() . '.' . $request->file('profile_photo')->extension();
-            $filePath = public_path('profilePhotos/' . $filename);
-            $request->file('profile_photo')->move($filePath, $filename);
-            $data['profile_photo'] = 'profilePhotos/' . $filename;
+        if ($request->hasFile('profile_photo'))
+        {
+            $file = $request->file('profile_photo');
+
+            $filePath = $file->storeAs('public/profilePhotos', 'user_' . time() . '.' . $file->getClientOriginalExtension());
+
+            $user->profile_photo = Storage::url($filePath);
+
+            $data['profile_photo'] = $user->profile_photo;
+
         }
+        else{
+            $data['profile_photo'] = null;
+        }
+      
         $user->update($data); 
 
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
@@ -168,15 +193,17 @@ class UserController extends Controller
         }
 
         $perPage = $request->input('length', 4);
-        $users = $usersQuery->paginate($perPage);
+        $page = $request->input('start', 0) / $perPage + 1;
+
+        $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
 
         if ($request->ajax()) 
         {
             return response()->json([
-                'draw' => $request->draw,
-                'recordsTotal' => $users->total(),
-                'recordsFiltered' => $users->total(),
-                'data' => $users->items(),
+                'draw' => $request->input('draw'),  // Pass the draw counter from DataTables
+                'recordsTotal' => $users->total(),  // Total records in the database
+                'recordsFiltered' => $users->total(),  // Filtered records based on search
+                'data' => $users->items(), 
             ]);
         }
         return view('users.index', compact('users'));

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
 
 class Users extends Model
 {
@@ -40,6 +42,11 @@ class Users extends Model
             'password' => $data['password'],
             'profile_photo' => $data['profile_photo'] ?? null,
         ]);
+
+        if(!empty($user->email))
+        {
+            Mail::to($user->email)->send(new WelcomeEmail($user));
+        }
     
         return $user;
     }
