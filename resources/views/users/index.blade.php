@@ -24,6 +24,7 @@
         <thead class="table-dark">
             <tr>
                 <th>Sr.No</th>
+                <th>Profile Photo</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Mobile No</th>
@@ -51,42 +52,19 @@
             ajax: {
                 url: "{{ route('users.index') }}", 
                 method: 'GET',
-                data: function(d) {
-                    d.search = $('input[type="search"]').val();
-                },
-                dataSrc: function (json) {
-                    return json.data;
-                }
             },
             columns: [
-                {
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return meta.row + 1 + meta.settings._iDisplayStart;
-                    },
-                    searchable: false,
-                    orderable: false
-                },
-                { data: 'name' },
-                { data: 'email' },
-                { data: 'mobile_no' },
-                { data: 'gender.name', defaultContent: 'N/A' },
-                { data: 'city.state.name', defaultContent: 'N/A' },
-                { data: 'city.name', defaultContent: 'N/A' },
-                {
-                    data: 'id',
-                    render: function(data, type, row) {
-                        return `
-                            <a href="/users/${data}/edit" class="btn btn-warning btn-sm mx-1">Edit</a>
-                            <form action="/users/${data}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm mx-1 delete-btn" data-id="${data}">Delete</button>
-                            </form>
-                        `;
-                    }
-                }
+                { data: 'DT_RowIndex', name: 'DT_RowIndex' },
+                { data: 'profile_photo', name: 'profile_photo' },
+                { data: 'name', name: 'name' },
+                { data: 'email', name: 'email' },
+                { data: 'mobile_no', name: 'mobile_no' },
+                { data: 'gender', name: 'gender' },
+                { data: 'state', name: 'state' },
+                { data: 'city', name: 'city' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false },
             ],
+            order: [[2, 'asc']], 
             lengthChange: true, 
             pageLength: 8, 
             dom: 'lfrtip',
