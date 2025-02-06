@@ -2,9 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-// use Illuminate\Support\Facades\Mail;
-// use App\Mail\WelcomeEmail;
-// use App\Models\Users;  
+ 
 
 Route::get('/welcome', function () {
     return view('welcome');
@@ -31,15 +29,4 @@ Route::get('/cities/{stateId}', [UserController::class, 'getCities']);
 
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
 
-// Route::get('/send-test-email/{$id}', function() {
-//     $user = Users::find($id);
-
-//     if ($user) {
-//         // Send the email
-//         Mail::to($user->email)->send(new WelcomeEmail($user));
-//         return 'Test email sent to ' . $user->email;
-//     } else {
-//         return 'User not found!';
-//     }
-// });
 

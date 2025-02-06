@@ -9,6 +9,7 @@ use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\Facades\DataTables;
 use Validator;
 
 class UserController extends Controller
@@ -74,15 +75,16 @@ class UserController extends Controller
         $data['created_at'] = now();
         
         $user = new Users();
-        //dd($data);
 
         if ($request->hasFile('profile_photo'))
         {
             $file = $request->file('profile_photo');
 
-            $filePath = $file->storeAs('public/profilePhotos', 'user_' . time() . '.' . $file->getClientOriginalExtension());
+            $fileName = 'user_' . time() . '.' . $file->getClientOriginalExtension();
 
-            $user->profile_photo = Storage::url($filePath);
+            $file->move(public_path('profilePhotos'), $fileName);
+
+            $user->profile_photo = 'profilePhotos/' . $fileName;
 
             $data['profile_photo'] = $user->profile_photo;
 
@@ -145,68 +147,84 @@ class UserController extends Controller
         {
             $file = $request->file('profile_photo');
 
-            $filePath = $file->storeAs('public/profilePhotos', 'user_' . time() . '.' . $file->getClientOriginalExtension());
+            $fileName = 'user_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('profilePhotos'), $fileName);
 
-            $user->profile_photo = Storage::url($filePath);
+            $user->profile_photo = 'profilePhotos/' . $fileName;
 
             $data['profile_photo'] = $user->profile_photo;
-
         }
         else{
             $data['profile_photo'] = null;
         }
-      
+    
         $user->update($data); 
 
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
 
-    //List all users
+    
     public function index(Request $request)
     {
-        $userModel = new Users();
+       if($request->ajax()) {
+        $users= Users::with(['gender', 'city', 'city.state.country'])->get();
 
-        $usersQuery = Users::with(['gender', 'city', 'city.state.country']);
-
-        if ($request->has('search') && $request->search != '') 
-        {
-            $search = $request->search;
-    
-            $usersQuery = $usersQuery->where(function($query) use ($search) 
+        return DataTables::of($users)
+            ->addIndexColumn()
+            ->editColumn('profile_photo', function($row)
             {
-                $query->where('name', 'like', "%$search%")
-                      ->orWhere('email', 'like', "%$search%")
-                      ->orWhere('mobile_no', 'like', "%$search%")
-                      ->orWhereHas('gender', function($query) use ($search) 
-                      {
-                          $query->where('name', 'like', "%$search%");
-                      })
-                      ->orWhereHas('city', function($query) use ($search) 
-                      {
-                          $query->where('name', 'like', "%$search%");
-                      })
-                      ->orWhereHas('city.state', function($query) use ($search) 
-                      { 
-                        $query->where('name', 'like', "%$search%");
-                    });
-            });
-        }
+                if ($row->profile_photo) 
+                {    
+                    $photoPath = $row->profile_photo;
+                
+                    if (strpos($photoPath, '/storage') === 0) 
+                    {
+                        $editPath = substr($photoPath, strlen('/storage'));
+                    }else{
+                        $editPath = null;
+                    }
+                    return '<img src="' . Storage::disk('public')->url('profilePhotos/user_1738228493.png') . '" class="profile-photo" alt="profile photo" width="50">';
+                    
+                }
+               return 'no photo';
+            })
+            ->addColumn('name', function($row) 
+            {
+                return $row->name ?? 'N/A';
+            })
+            ->addColumn('mobile_no', function($row)
+            {
+                return $row->mobile_no ?? 'N/A';
 
-        $perPage = $request->input('length', 4);
-        $page = $request->input('start', 0) / $perPage + 1;
+            })
+            ->addColumn('gender', function($row)
+            {
+                return $row->gender->name ?? 'N/A';
 
-        $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
+            })
+            ->addColumn('state', function($row) 
+            {
+                return $row->city->state->name ?? 'N/A';
+            })
+            ->addColumn('city', function($row) 
+            {
+                return $row->city->name ?? 'N/A';
+            })
+            ->addColumn('actions', function($row) 
+            {
+                return '
+                    <a href="/users/' . $row->id . '/edit" class="btn btn-warning btn-sm mx-1">Edit</a>
+                    <form action="/users/' . $row->id . '" method="POST" style="display:inline;">
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+                        <button type="submit" class="btn btn-danger btn-sm mx-1 delete-btn" data-id="' . $row->id . '">Delete</button>
+                    </form>';
+            })
+            ->rawColumns(['profile_photo', 'actions'])
+            ->make(true);  
+       }
 
-        if ($request->ajax()) 
-        {
-            return response()->json([
-                'draw' => $request->input('draw'),  // Pass the draw counter from DataTables
-                'recordsTotal' => $users->total(),  // Total records in the database
-                'recordsFiltered' => $users->total(),  // Filtered records based on search
-                'data' => $users->items(), 
-            ]);
-        }
-        return view('users.index', compact('users'));
+        return view('users.index');
     }
 
     public function getStates($countryId)
